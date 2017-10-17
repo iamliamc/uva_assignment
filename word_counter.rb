@@ -6,14 +6,15 @@ require_relative 'collection'
 
 class WordCounter
 
-  attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count
+  attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table
 
   def initialize
     @source_url = "http://gss.uva.nl/binaries/content/assets/programmas/information-studies/txt-for-assignment-data-science.txt?3015083536432"
     @text_source = "./txt-for-assignment-data-science.txt"
     @lem = Lemmatizer.new
     @preprocess_storage = {}
-    @word_count = {}
+    @articles_with_counts = {}
+    @word_count_table = {}
     # simple white space tokenizer with ruby regex sufficient
     # @tokenizer = Tokenizer::WhitespaceTokenizer.new
   end
@@ -34,15 +35,24 @@ class WordCounter
   end
 
   def count_tokens_by_article
-    articles_with_count = {}
     @preprocess_storage.each do |article_id, tokenized_article|
-      articles_with_count[article_id + 1] = count(tokenized_article)
+      @articles_with_counts[article_id + 1] = count(tokenized_article)
     end
-    articles_with_count
+  end
+
+  def article_counts_by_word
+    @articles_with_counts.each do |article_id, counts_by_word|
+      counts_by_word.each do |word, count|
+        @word_count_table[word] ||= []
+        @word_count_table[word].push([article_id, count])
+      end
+    end
   end
 
   def work
     retrieve_tokenize_and_lemmatize
     count_tokens_by_article
+    article_counts_by_word
+    @word_count_table
   end
 end
