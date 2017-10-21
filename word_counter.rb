@@ -39,6 +39,10 @@ class LinkedList
     end
     elements << current
   end
+
+  def return_values
+    return_list.map{|n| n.val}
+  end
 end
 
 class WordCounter
