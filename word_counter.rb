@@ -7,7 +7,7 @@ require 'chartkick'
 include Chartkick::Helper
 
 class WordCounter
-  attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table
+  attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table, :graph_data
 
   def initialize
     @source_url = "http://gss.uva.nl/binaries/content/assets/programmas/information-studies/txt-for-assignment-data-science.txt?3015083536432"
@@ -17,13 +17,13 @@ class WordCounter
     @articles_with_counts = {}
     @word_count_table = {}
     retrieve_tokenize_and_lemmatize
-    # simple white space tokenizer with ruby regex sufficient
-    # @tokenizer = Tokenizer::WhitespaceTokenizer.new
+    @graph_data = format_for_plotting(histogram_data_for_collection)
   end
 
   def retrieve_tokenize_and_lemmatize
     doc = Nokogiri::HTML(open(@text_source))
     doc.search('text').each_with_index do |link, index|
+      # simple white space tokenizer with ruby regex sufficient
       tokenized_text = link.content.scan(/\w+/)
       @preprocess_storage[index] = tokenized_text.map{ |token| @lem.lemma(token.downcase) }
     end
@@ -71,14 +71,11 @@ class WordCounter
   end
 
   def plot_histogram
-    @data = format_for_plotting(histogram_data_for_collection)
-    template = "<%= column_chart @data, xtitle: 'Word Count', ytitle: 'Count Frequency' %>"
-    renderer = ERB.new(template)
-    graph_results = renderer.result()
+    graph_html = column_chart @graph_data, xtitle: 'Word Count', ytitle: 'Count Frequency'
     open('frequency_count_plot.html', 'w+') do |f|
       f.puts '<script src="https://www.google.com/jsapi"></script>'
       f.puts '<script src="chartkick.js"></script>'
-      f.puts graph_results
+      f.puts graph_html
     end
   end
 
