@@ -4,10 +4,9 @@ require 'tokenizer'
 require 'lemmatizer'
 require 'histogram/array'
 require 'chartkick'
-require_relative 'collection'
+include Chartkick::Helper
 
 class WordCounter
-  include Chartkick::Helper
   attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table
 
   def initialize
@@ -56,9 +55,31 @@ class WordCounter
     end
   end
 
-  def histogram_for_collection
+  def histogram_data_for_collection
     collection_counts = count_tokens_by_collection.values
     (bins, freq) = collection_counts.histogram(collection_counts.uniq.sort)
+  end
+
+  def format_for_plotting(histogram_arrays)
+    frequency_count_hash = {}
+    count_array = histogram_arrays[0]
+    frequency_array = histogram_arrays[1]
+    count_array.each_with_index do |count, index|
+      frequency_count_hash[count.to_i] = frequency_array[index].to_i
+    end
+    frequency_count_hash
+  end
+
+  def plot_histogram
+    @data = format_for_plotting(histogram_data_for_collection)
+    template = "<%= column_chart @data, xtitle: 'Word Count', ytitle: 'Count Frequency' %>"
+    renderer = ERB.new(template)
+    graph_results = renderer.result()
+    open('frequency_count_plot.html', 'w+') do |f|
+      f.puts '<script src="https://www.google.com/jsapi"></script>'
+      f.puts '<script src="chartkick.js"></script>'
+      f.puts graph_results
+    end
   end
 
   def count_source
