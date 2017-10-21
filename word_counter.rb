@@ -2,10 +2,12 @@ require 'nokogiri'
 require 'open-uri'
 require 'tokenizer'
 require 'lemmatizer'
+require 'histogram/array'
+require 'chartkick'
 require_relative 'collection'
 
 class WordCounter
-
+  include Chartkick::Helper
   attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table
 
   def initialize
@@ -15,6 +17,7 @@ class WordCounter
     @preprocess_storage = {}
     @articles_with_counts = {}
     @word_count_table = {}
+    retrieve_tokenize_and_lemmatize
     # simple white space tokenizer with ruby regex sufficient
     # @tokenizer = Tokenizer::WhitespaceTokenizer.new
   end
@@ -40,6 +43,10 @@ class WordCounter
     end
   end
 
+  def count_tokens_by_collection
+    count(@preprocess_storage.values.flatten)
+  end
+
   def article_counts_by_word
     @articles_with_counts.each do |article_id, counts_by_word|
       counts_by_word.each do |word, count|
@@ -49,10 +56,25 @@ class WordCounter
     end
   end
 
-  def work
-    retrieve_tokenize_and_lemmatize
+  def histogram_for_collection
+    collection_counts = count_tokens_by_collection.values
+    (bins, freq) = collection_counts.histogram(collection_counts.uniq.sort)
+  end
+
+  def count_source
     count_tokens_by_article
     article_counts_by_word
     @word_count_table
+  end
+end
+
+# ruby doesn't have a native implementation of linked lists
+class Node
+  attr_accessor :value, :next_node, :previous_node
+
+  def initialize(value, next_node, previous_node)
+    @value = value
+    @next_node = next_node
+    @previous_node  = previous_node
   end
 end
