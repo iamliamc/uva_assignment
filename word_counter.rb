@@ -6,6 +6,41 @@ require 'histogram/array'
 require 'chartkick'
 include Chartkick::Helper
 
+# ruby doesn't have a native implementation of linked lists
+class Node
+  attr_accessor :val, :next
+
+  def initialize(val, next_node)
+      @val = val
+      @next = next_node
+  end
+end
+
+class LinkedList
+
+  def initialize(val)
+    @head = Node.new(val, nil)
+  end
+
+  def add(val)
+    current = @head
+    while current.next != nil
+      current = current.next
+    end
+    current.next = Node.new(val, nil)
+  end
+
+  def return_list
+    elements = []
+    current = @head
+    while current.next != nil
+      elements << current
+      current = current.next
+    end
+    elements << current
+  end
+end
+
 class WordCounter
   attr_accessor :source_url, :text_source, :lem, :preprocess_storage, :word_count, :articles_with_counts, :word_count_table, :graph_data
 
@@ -49,8 +84,11 @@ class WordCounter
   def article_counts_by_word
     @articles_with_counts.each do |article_id, counts_by_word|
       counts_by_word.each do |word, count|
-        @word_count_table[word] ||= []
-        @word_count_table[word].push([article_id, count])
+        if @word_count_table[word] == nil
+          @word_count_table[word] = LinkedList.new([article_id, count])
+        else
+          @word_count_table[word].add([article_id, count])
+        end
       end
     end
   end
@@ -83,16 +121,5 @@ class WordCounter
     count_tokens_by_article
     article_counts_by_word
     @word_count_table
-  end
-end
-
-# ruby doesn't have a native implementation of linked lists
-class Node
-  attr_accessor :value, :next_node, :previous_node
-
-  def initialize(value, next_node, previous_node)
-    @value = value
-    @next_node = next_node
-    @previous_node  = previous_node
   end
 end
