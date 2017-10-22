@@ -1,6 +1,5 @@
 require 'nokogiri'
 require 'open-uri'
-require 'tokenizer'
 require 'lemmatizer'
 require 'histogram/array'
 require 'chartkick'
@@ -83,6 +82,10 @@ class WordCounter
 
   def count_tokens_by_collection
     count(@preprocess_storage.values.flatten)
+  end
+
+  def all_frequencies_descending
+    count_tokens_by_collection.values.sort.reverse
   end
 
   def article_counts_by_word
