@@ -7,7 +7,8 @@ log_rank <- log(rank)
 plot(log(fr) ~ log(rank))
 reg <- lm(log(fr) ~ log(rank))
 abline(reg, untf=F)
-
+reg
+summary(reg)
           
 #> reg
 #
