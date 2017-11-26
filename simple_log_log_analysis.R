@@ -9,3 +9,4 @@ reg <- lm(log(fr) ~ log(rank))
 abline(reg, untf=F)
 reg
 summary(reg)
+plot(reg)

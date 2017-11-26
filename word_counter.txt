@@ -88,14 +88,6 @@ class WordCounter
     count_tokens_by_collection.values.sort.reverse
   end
 
-  def get_token_count_ranks
-    ranks = {}
-    graph_data.keys.sort.reverse.each_with_index do |val, index|
-      ranks[val] = index + 1
-    end
-    all_frequencies_descending.map{|v| ranks[v]}
-  end
-
   def article_counts_by_word
     @articles_with_counts.each do |article_id, counts_by_word|
       counts_by_word.each do |word, count|
